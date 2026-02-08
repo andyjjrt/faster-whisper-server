@@ -9,7 +9,7 @@ import os
 import uvicorn
 
 from .api import app
-from .models import configure_model, configure_models_from_config
+from .models import configure_batch_size, configure_model, configure_models_from_config
 
 
 def _configure_logging(level_name: str) -> None:
@@ -55,19 +55,35 @@ def main() -> None:
         default=5,
         help="Keep-alive timeout in seconds.",
     )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=1,
+        help="Batch size for inference (default: 1).",
+    )
     args = parser.parse_args()
 
     _configure_logging(args.log_level)
+
+    if args.batch_size < 1:
+        parser.error("--batch-size must be >= 1")
 
     if args.config and args.model:
         parser.error("Do not pass a model when --config is provided.")
     if not args.config and not args.model:
         parser.error("A model is required unless --config is provided.")
+    if args.config and args.batch_size != 1:
+        parser.error(
+            "--batch-size is not supported with --config; "
+            "set batch_size in the YAML config instead."
+        )
 
     if args.config:
         os.environ["FWS_CONFIG_PATH"] = args.config
         configure_models_from_config(args.config)
     else:
+        os.environ["FWS_BATCH_SIZE"] = str(args.batch_size)
+        configure_batch_size(args.batch_size)
         os.environ["FWS_MODEL_NAME"] = args.model
         configure_model(args.model)
 

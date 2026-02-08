@@ -26,14 +26,24 @@ faster-whisper-server --config /path/to/config.yaml --reload
 Example config:
 
 ```yaml
+batch_size: 1
+model_options:
+  device: auto
+  compute_type: default
 models:
 	- name: whisper-1
 		path: small
+		model_options:
+			device: cpu
 		transcribe_options:
 			beam_size: 5
 			vad_filter: true
 	- name: large-fast
 		path: /models/large-v3
+		batch_size: 4
+		model_options:
+			device: cuda
+			compute_type: float16
 		translate_options:
 			temperature: 0.2
 ```
