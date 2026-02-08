@@ -81,3 +81,52 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  release:
+    if: startsWith(github.ref_name, 'v')
+    needs: [determine-release, publish-prod, publish-test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version
+        id: meta
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog
+        id: changelog
+        uses: jaywcjlove/changelog-generator@v2.2.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filter-author: (andyjjrt|dependabot|renovate\[bot\]|dependabot\[bot\]|Renovate Bot)
+          filter: '[R|r]elease[d]\s+[v|V]\d(\.\d+){0,2}'
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Get the changelog
+        run: echo "${{ steps.changelog.outputs.changelog }}"
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: v${{ steps.meta.outputs.version }}
+          tag: v${{ steps.meta.outputs.version }}
+          prerelease: ${{ needs.determine-release.outputs.is_beta == 'true' }}
+          artifacts: dist/*
+          artifactContentType: application/octet-stream
+          body: |
+            # v${{ steps.meta.outputs.version }}
+
+            ## Changelog
+
+            ${{ steps.changelog.outputs.changelog }}
+
+            See also: ${{ steps.changelog.outputs.compareurl }}
