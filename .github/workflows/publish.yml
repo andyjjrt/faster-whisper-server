@@ -22,10 +22,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Sync dependencies
-        run: uv sync --frozen
-
-      - name: Add build package
-        run: uv add build
+        run: uv sync --frozen --group dev
 
       - name: Build distribution
         run: uv build
@@ -36,8 +33,42 @@ jobs:
           name: dist
           path: dist/
 
-  publish:
-    needs: build
+  determine-release:
+    runs-on: ubuntu-latest
+    outputs:
+      is_beta: ${{ steps.tag_check.outputs.is_beta }}
+    steps:
+      - name: Check tag
+        id: tag_check
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_NAME}" =~ ^v.*-beta[0-9]+$ ]]; then
+            echo "is_beta=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_beta=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish-test:
+    if: needs.determine-release.outputs.is_beta == 'true'
+    needs: [build, determine-release]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-prod:
+    if: needs.determine-release.outputs.is_beta == 'false'
+    needs: [build, determine-release]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
