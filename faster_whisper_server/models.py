@@ -9,9 +9,10 @@ from typing import Any, Dict, Optional, Tuple
 from faster_whisper import WhisperModel
 from faster_whisper.utils import available_models, download_model
 
+from faster_whisper_server.config import ModelConfig, load_config
+
 logger = logging.getLogger("faster-whisper-server")
 
-from .config import ModelConfig, load_config
 
 _DEFAULT_KEY = "_default"
 
@@ -36,7 +37,8 @@ def _log_download_if_needed(model_name: str) -> None:
         return
     except Exception:
         logger.info(
-            "Model '%s' not cached; downloading if needed (first run may take a while).",
+            "Model '%s' not cached; ",
+            "downloading if needed (first run may take a while).",
             model_name,
         )
 

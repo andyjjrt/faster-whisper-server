@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import os
 import tempfile
-from typing import Optional
-
 from contextlib import asynccontextmanager
+from typing import Optional
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from .formats import file_suffix, segments_to_srt, segments_to_vtt
 from .models import get_model_for_request, initialize_from_env
+
 
 @asynccontextmanager
 async def _lifespan(_: FastAPI):
@@ -65,7 +65,9 @@ async def transcriptions(
     model, base_options = _select_model(model_name, "transcribe")
     contents = await file.read()
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=file_suffix(file.filename)) as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=file_suffix(file.filename)
+    ) as tmp:
         tmp.write(contents)
         tmp_path = tmp.name
 
@@ -143,7 +145,9 @@ async def translations(
     model, base_options = _select_model(model_name, "translate")
     contents = await file.read()
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=file_suffix(file.filename)) as tmp:
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=file_suffix(file.filename)
+    ) as tmp:
         tmp.write(contents)
         tmp_path = tmp.name
 
