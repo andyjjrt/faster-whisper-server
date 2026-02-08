@@ -84,7 +84,7 @@ jobs:
 
   release:
     if: startsWith(github.ref_name, 'v')
-    needs: [determine-release, publish-prod, publish-test]
+    needs: [build, determine-release]
     runs-on: ubuntu-latest
     permissions:
       contents: write
