@@ -7,9 +7,49 @@ faster-whisper. Supports single-model or multi-model hosting.
 
 ## Install
 
+Requires Python 3.10 or newer.
+
+### From PyPI
+
 ```bash
-uv pip install -e .
+pip install faster-whisper-server
 ```
+
+Or install it as an isolated CLI tool:
+
+```bash
+pipx install faster-whisper-server
+# or
+uv tool install faster-whisper-server
+```
+
+### From GitHub
+
+```bash
+pip install git+https://github.com/andyjjrt/faster-whisper-server.git
+```
+
+### Beta releases
+
+Beta versions are published to TestPyPI. Dependencies still come from PyPI:
+
+```bash
+pip install --pre \
+	--index-url https://test.pypi.org/simple/ \
+	--extra-index-url https://pypi.org/simple/ \
+	faster-whisper-server
+```
+
+### For development
+
+```bash
+git clone https://github.com/andyjjrt/faster-whisper-server.git
+cd faster-whisper-server
+uv pip install -e ".[dev]"
+```
+
+After installing, the `faster-whisper-server` command is available on your
+`PATH`. You can also run it with `python -m faster_whisper_server`.
 
 ## Run (single model)
 
